@@ -22,6 +22,7 @@ import com.google.errorprone.annotations.CanIgnoreReturnValue;
 import com.google.j2objc.annotations.ReflectionSupport;
 import java.util.concurrent.atomic.AtomicLongFieldUpdater;
 import java.util.function.DoubleBinaryOperator;
+import java.util.function.DoubleUnaryOperator;
 
 /**
  * A {@code double} value that may be updated atomically. See the {@link
@@ -219,6 +220,44 @@ public class AtomicDouble extends Number implements java.io.Serializable {
       long current = value;
       double currentVal = longBitsToDouble(current);
       double nextVal = accumulatorFunction.applyAsDouble(currentVal, x);
+      long next = doubleToRawLongBits(nextVal);
+      if (updater.compareAndSet(this, current, next)) {
+        return currentVal;
+      }
+    }
+  }
+
+  /**
+   * Atomically applies the provided operation to the current value.
+   *
+   * @param updateFunction the update function
+   * @return the updated value
+   */
+  @CanIgnoreReturnValue
+  public final double updateAndGet(DoubleUnaryOperator updateFunction) {
+    while (true) {
+      long current = value;
+      double currentVal = longBitsToDouble(current);
+      double nextVal = updateFunction.applyAsDouble(currentVal);
+      long next = doubleToRawLongBits(nextVal);
+      if (updater.compareAndSet(this, current, next)) {
+        return nextVal;
+      }
+    }
+  }
+
+  /**
+   * Atomically applies the provided operation to the current value.
+   *
+   * @param updateFunction the update function
+   * @return the updated value
+   */
+  @CanIgnoreReturnValue
+  public final double getAndUpdate(DoubleUnaryOperator updateFunction) {
+    while (true) {
+      long current = value;
+      double currentVal = longBitsToDouble(current);
+      double nextVal = updateFunction.applyAsDouble(currentVal);
       long next = doubleToRawLongBits(nextVal);
       if (updater.compareAndSet(this, current, next)) {
         return currentVal;

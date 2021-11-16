@@ -14,7 +14,6 @@
 package com.google.common.util.concurrent;
 
 
-import java.util.function.DoubleBinaryOperator;
 import java.util.function.DoubleUnaryOperator;
 
 /** Unit test for {@link AtomicDouble}. */
@@ -232,7 +231,7 @@ public class AtomicDoubleTest extends JSR166TestCase {
     }
   }
 
-  /** tests accumulateAndGet with min stores min of given value to current, and returns previous value */
+  /** tests getAndAccumulate with min stores min of given value to current, and returns previous value */
   public void testGetAndAccumulateWithMin() {
     for (double x : VALUES) {
       for (double y : VALUES) {
@@ -241,6 +240,54 @@ public class AtomicDoubleTest extends JSR166TestCase {
         double expectedMin = Math.min(x, y);
         assertBitEquals(x, z);
         assertBitEquals(expectedMin, a.get());
+      }
+    }
+  }
+
+  /** tests updateAndGet with sum stores sum of given value to current, and returns current value */
+  public void testUpdateAndGetWithSum() {
+    for (double x : VALUES) {
+      for (double y : VALUES) {
+        AtomicDouble a = new AtomicDouble(x);
+        double z = a.updateAndGet(DoubleUnarySum(y));
+        assertBitEquals(x + y, z);
+        assertBitEquals(x + y, a.get());
+      }
+    }
+  }
+
+  /** tests updateAndGet with subtract stores subtraction of value from current, and returns current value */
+  public void testUpdateAndGetWithSubtract() {
+    for (double x : VALUES) {
+      for (double y : VALUES) {
+        AtomicDouble a = new AtomicDouble(x);
+        double z = a.updateAndGet(DoubleUnarySubtract(y));
+        assertBitEquals(x - y, z);
+        assertBitEquals(x - y, a.get());
+      }
+    }
+  }
+
+  /** tests updateAndGet with sum stores sum of given value to current, and returns previous value */
+  public void testGetAndUpdateWithSum() {
+    for (double x : VALUES) {
+      for (double y : VALUES) {
+        AtomicDouble a = new AtomicDouble(x);
+        double z = a.getAndUpdate(DoubleUnarySum(y));
+        assertBitEquals(x, z);
+        assertBitEquals(x + y, a.get());
+      }
+    }
+  }
+
+  /** tests updateAndGet with subtract stores subtraction of value from current, and returns previous value */
+  public void testGetAndUpdateWithSubtract() {
+    for (double x : VALUES) {
+      for (double y : VALUES) {
+        AtomicDouble a = new AtomicDouble(x);
+        double z = a.getAndUpdate(DoubleUnarySubtract(y));
+        assertBitEquals(x, z);
+        assertBitEquals(x - y, a.get());
       }
     }
   }
@@ -324,4 +371,8 @@ public class AtomicDoubleTest extends JSR166TestCase {
     assertFalse(at.weakCompareAndSet(+0.0, 7.0));
     assertBitEquals(-0.0, at.get());
   }
+
+  private static DoubleUnaryOperator DoubleUnarySum(double value) { return x -> x + value; }
+
+  private static DoubleUnaryOperator DoubleUnarySubtract(double value) { return x -> x - value; }
 }
