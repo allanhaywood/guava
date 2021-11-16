@@ -21,6 +21,7 @@ import com.google.common.annotations.GwtIncompatible;
 import com.google.errorprone.annotations.CanIgnoreReturnValue;
 import com.google.j2objc.annotations.ReflectionSupport;
 import java.util.concurrent.atomic.AtomicLongFieldUpdater;
+import java.util.function.DoubleBinaryOperator;
 
 /**
  * A {@code double} value that may be updated atomically. See the {@link
@@ -181,6 +182,46 @@ public class AtomicDouble extends Number implements java.io.Serializable {
       long next = doubleToRawLongBits(nextVal);
       if (updater.compareAndSet(this, current, next)) {
         return nextVal;
+      }
+    }
+  }
+
+  /**
+   * Atomically applies the provided operation and the given value to the current value.
+   *
+   * @param x the value to accumulate with
+   * @param accumulatorFunction the accumulator function
+   * @return the updated value
+   */
+  @CanIgnoreReturnValue
+  public final double accumulateAndGet(double x, DoubleBinaryOperator accumulatorFunction) {
+    while (true) {
+      long current = value;
+      double currentVal = longBitsToDouble(current);
+      double nextVal = accumulatorFunction.applyAsDouble(currentVal, x);
+      long next = doubleToRawLongBits(nextVal);
+      if (updater.compareAndSet(this, current, next)) {
+        return nextVal;
+      }
+    }
+  }
+
+  /**
+   * Atomically applies the provided operation and the given value to the current value.
+   *
+   * @param x the value to accumulate with
+   * @param accumulatorFunction the accumulator function
+   * @return the previous value
+   */
+  @CanIgnoreReturnValue
+  public final double getAndAccumulate(double x, DoubleBinaryOperator accumulatorFunction) {
+    while (true) {
+      long current = value;
+      double currentVal = longBitsToDouble(current);
+      double nextVal = accumulatorFunction.applyAsDouble(currentVal, x);
+      long next = doubleToRawLongBits(nextVal);
+      if (updater.compareAndSet(this, current, next)) {
+        return currentVal;
       }
     }
   }

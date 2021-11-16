@@ -14,6 +14,9 @@
 package com.google.common.util.concurrent;
 
 
+import java.util.function.DoubleBinaryOperator;
+import java.util.function.DoubleUnaryOperator;
+
 /** Unit test for {@link AtomicDouble}. */
 public class AtomicDoubleTest extends JSR166TestCase {
 
@@ -162,6 +165,82 @@ public class AtomicDoubleTest extends JSR166TestCase {
         double z = a.addAndGet(y);
         assertBitEquals(x + y, z);
         assertBitEquals(x + y, a.get());
+      }
+    }
+  }
+
+  /** tests accumulateAndGet with sum adds given value to current, and returns current value */
+  public void testAccumulateAndGetWithSum() {
+    for (double x : VALUES) {
+      for (double y : VALUES) {
+        AtomicDouble a = new AtomicDouble(x);
+        double z = a.accumulateAndGet(y, Double::sum);
+        assertBitEquals(x + y, z);
+        assertBitEquals(x + y, a.get());
+      }
+    }
+  }
+
+  /** tests accumulateAndGet with max stores max of given value to current, and returns current value */
+  public void testAccumulateAndGetWithMax() {
+    for (double x : VALUES) {
+      for (double y : VALUES) {
+        AtomicDouble a = new AtomicDouble(x);
+        double z = a.accumulateAndGet(y, Double::max);
+        double expectedMax = Math.max(x, y);
+        assertBitEquals(expectedMax, z);
+        assertBitEquals(expectedMax, a.get());
+      }
+    }
+  }
+
+  /** tests accumulateAndGet with min stores min of given value to current, and returns current value */
+  public void testAccumulateAndGetWithMin() {
+    for (double x : VALUES) {
+      for (double y : VALUES) {
+        AtomicDouble a = new AtomicDouble(x);
+        double z = a.accumulateAndGet(y, Double::min);
+        double expectedMin = Math.min(x, y);
+        assertBitEquals(expectedMin, z);
+        assertBitEquals(expectedMin, a.get());
+      }
+    }
+  }
+
+  /** tests getAndAccumulate with sum adds given value to current, and returns previous value */
+  public void testGetAndAccumulateWithSum() {
+    for (double x : VALUES) {
+      for (double y : VALUES) {
+        AtomicDouble a = new AtomicDouble(x);
+        double z = a.getAndAccumulate(y, Double::sum);
+        assertBitEquals(x, z);
+        assertBitEquals(x + y, a.get());
+      }
+    }
+  }
+
+  /** tests getAndAccumulate with max stores max of given value to current, and returns previous value */
+  public void testGetAndAccumulateWithMax() {
+    for (double x : VALUES) {
+      for (double y : VALUES) {
+        AtomicDouble a = new AtomicDouble(x);
+        double z = a.getAndAccumulate(y, Double::max);
+        double expectedMax = Math.max(x, y);
+        assertBitEquals(x, z);
+        assertBitEquals(expectedMax, a.get());
+      }
+    }
+  }
+
+  /** tests accumulateAndGet with min stores min of given value to current, and returns previous value */
+  public void testGetAndAccumulateWithMin() {
+    for (double x : VALUES) {
+      for (double y : VALUES) {
+        AtomicDouble a = new AtomicDouble(x);
+        double z = a.getAndAccumulate(y, Double::min);
+        double expectedMin = Math.min(x, y);
+        assertBitEquals(x, z);
+        assertBitEquals(expectedMin, a.get());
       }
     }
   }
