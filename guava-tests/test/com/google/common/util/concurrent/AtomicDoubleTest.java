@@ -373,6 +373,5 @@ public class AtomicDoubleTest extends JSR166TestCase {
   }
 
   private static DoubleUnaryOperator DoubleUnarySum(double value) { return x -> x + value; }
-
   private static DoubleUnaryOperator DoubleUnarySubtract(double value) { return x -> x - value; }
 }

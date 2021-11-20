@@ -19,11 +19,9 @@ import static java.lang.Double.doubleToRawLongBits;
 import static java.lang.Double.longBitsToDouble;
 
 import com.google.common.annotations.GwtIncompatible;
-import com.google.common.base.Verify;
 import com.google.errorprone.annotations.CanIgnoreReturnValue;
 import com.google.j2objc.annotations.ReflectionSupport;
 
-import javax.annotation.CheckForNull;
 import java.util.concurrent.atomic.AtomicLongFieldUpdater;
 import java.util.function.DoubleBinaryOperator;
 import java.util.function.DoubleUnaryOperator;
@@ -225,6 +223,7 @@ public class AtomicDouble extends Number implements java.io.Serializable {
    */
   @CanIgnoreReturnValue
   public final double updateAndGet(DoubleUnaryOperator updateFunction) {
+    checkNotNull(updateFunction);
     while (true) {
       long current = value;
       double currentVal = longBitsToDouble(current);
@@ -244,6 +243,7 @@ public class AtomicDouble extends Number implements java.io.Serializable {
    */
   @CanIgnoreReturnValue
   public final double getAndUpdate(DoubleUnaryOperator updateFunction) {
+    checkNotNull(updateFunction);
     while (true) {
       long current = value;
       double currentVal = longBitsToDouble(current);
