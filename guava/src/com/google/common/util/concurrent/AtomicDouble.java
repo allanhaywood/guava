@@ -14,12 +14,16 @@
 
 package com.google.common.util.concurrent;
 
+import static com.google.common.base.Preconditions.checkNotNull;
 import static java.lang.Double.doubleToRawLongBits;
 import static java.lang.Double.longBitsToDouble;
 
 import com.google.common.annotations.GwtIncompatible;
+import com.google.common.base.Verify;
 import com.google.errorprone.annotations.CanIgnoreReturnValue;
 import com.google.j2objc.annotations.ReflectionSupport;
+
+import javax.annotation.CheckForNull;
 import java.util.concurrent.atomic.AtomicLongFieldUpdater;
 import java.util.function.DoubleBinaryOperator;
 import java.util.function.DoubleUnaryOperator;
@@ -196,15 +200,8 @@ public class AtomicDouble extends Number implements java.io.Serializable {
    */
   @CanIgnoreReturnValue
   public final double accumulateAndGet(double x, DoubleBinaryOperator accumulatorFunction) {
-    while (true) {
-      long current = value;
-      double currentVal = longBitsToDouble(current);
-      double nextVal = accumulatorFunction.applyAsDouble(currentVal, x);
-      long next = doubleToRawLongBits(nextVal);
-      if (updater.compareAndSet(this, current, next)) {
-        return nextVal;
-      }
-    }
+    checkNotNull(accumulatorFunction);
+    return updateAndGet(oldValue -> accumulatorFunction.applyAsDouble(oldValue, x));
   }
 
   /**
@@ -216,15 +213,8 @@ public class AtomicDouble extends Number implements java.io.Serializable {
    */
   @CanIgnoreReturnValue
   public final double getAndAccumulate(double x, DoubleBinaryOperator accumulatorFunction) {
-    while (true) {
-      long current = value;
-      double currentVal = longBitsToDouble(current);
-      double nextVal = accumulatorFunction.applyAsDouble(currentVal, x);
-      long next = doubleToRawLongBits(nextVal);
-      if (updater.compareAndSet(this, current, next)) {
-        return currentVal;
-      }
-    }
+    checkNotNull(accumulatorFunction);
+    return getAndUpdate(oldValue -> accumulatorFunction.applyAsDouble(oldValue, x));
   }
 
   /**
